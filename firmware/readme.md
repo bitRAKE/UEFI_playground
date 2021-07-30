@@ -1,4 +1,4 @@
-These firmwares come from various places. As the need for different execution environments grows
+As the need for different execution environments grows ... these firmwares come from various places.
 
 
 \OVMF_amd64
