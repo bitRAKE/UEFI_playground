@@ -28,9 +28,10 @@ USTR equ _header du \
 USTR equ _unsupported du \
 	'      1 | 80 x 50 Unsupported',13,10,0
 
-	and [.mode],0
+	or [.mode],-1
 	lea rdx,[_header]
 .itterator:
+	add [.mode],1
 	mov rcx,[rbp + EFI_SYSTEM_TABLE.ConOut]
 	call [rcx + EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL.OutputString]
 
@@ -41,7 +42,6 @@ USTR equ _unsupported du \
 	; shouldn't they call this ModeCount, ModesAvailible, or ModeLimit?
 	cmp edx,[rax + EFI_SIMPLE_TEXT_OUTPUT_MODE.MaxMode]
 	jnc .complete
-	add [.mode],1
 	lea r8,[.cols] ;*UINTN
 	lea r9,[.rows] ;*UINTN
 	call [rcx + EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL.QueryMode]
@@ -53,7 +53,7 @@ USTR equ _unsupported du \
 
 	cmp eax,EFI_UNSUPPORTED - EFIERR ; assume high-dword is 0x80..
 	jnz .efierr_forward
-	cmp [.mode],2
+	cmp [.mode],1
 	jnz .efierr_forward
 	lea rdx,[_unsupported]
 	jmp .itterator

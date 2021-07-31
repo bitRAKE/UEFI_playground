@@ -70,11 +70,11 @@ start:	entry $
 		.mnfo EFI_GRAPHICS_OUTPUT_MODE_INFORMATION
 	end virtual
 
-	push 0		; terminator for MultiCat_UCS2
+	push 0				; terminator for MultiCat_UCS2
 	lea rax,[_eol]
 	push rax
 
-	lea rdi,[_buildup] ; progressive buffer used & updated by generators
+	lea rdi,[_buildup]		; progressive buffer used & updated by generators
 
 	mov eax,[.mnfo.PixelFormat]
 	cmp eax,PixelFormatMax
@@ -84,16 +84,16 @@ start:	entry $
 	call rax ; dispatch based on EFI_GRAPHICS_PIXEL_FORMAT
 	push rax
 .unknown_pixel_format:
-	iterate F,	-5:[.mode + 8*(5+9)],			' |',\
+	iterate F,	-5:[.mode + 8*13],			' |',\
 			-2:[.mnfo.Version],			' |',\
 			-5:[.mnfo.HorizontalResolution],	' x ',\
 			 5:[.mnfo.VerticalResolution],		'|',\
-			-5:[.mnfo.PixelsPerScanLine],		' |'
+			-5:[.mnfo.PixelsPerScanLine],		' | '
 
 		indx %% - % + 1 ; reverse order
 		match W:V,F ; field spec
-			push W
 			mov edx,V
+			push W
 			call FieldJustify
 		else if elementsof F = 0 \
 			& F eqtype 'string'
@@ -121,15 +121,15 @@ start:	entry $
 
 
 Format_RGB:
-	lea rax,[_RGB]
+	_U rax,'RGB'
 	retn
 
 Format_BGR:
-	lea rax,[_BGR]
+	_U rax,'BGR'
 	retn
 
 Format_Blt:
-	lea rax,[_blit_only]
+	_U rax,'blit only'
 	retn
 
 Format_Table:
@@ -215,10 +215,6 @@ FieldJustify:
 USTR equ gop_guid EFI_GUID EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID
 
 USTR equ MaskHeads du ' R G B ?'
-USTR equ _RGB du ' RGB',0
-USTR equ _BGR du ' BGR',0
-USTR equ _blit_only du ' blit only',0
-
 USTR equ _header du \
 	' Mode |Ver|    H x V    | Span | Format',13,10,\
 	'------|---|-------------|------|-------->'
