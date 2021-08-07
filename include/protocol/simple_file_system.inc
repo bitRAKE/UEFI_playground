@@ -1,0 +1,52 @@
+?GUID equ EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID \
+{0x964E5B22,0x6459,0x11D2,{0x8E,0x39,0x00,0xA0,0xC9,0x69,0x72,0x3B}}
+struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL
+	Revision	dq ?	;
+	OpenVolume	PTR ?	; EFI_STATUS (*this,**EFI_FILE_PROTOCOL)
+ends
+
+EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION :=  0x0001_0000
+
+
+; no GUID, only accessible from OpenVolume,Open,OpenEx
+struct EFI_FILE_PROTOCOL
+	Revision	dq ?
+	Open		PTR ? ; EFI_STATUS (*this,**EFI_FILE_PROTOCOL,*CHAR16,UINT64,UINT64)
+	Close		PTR ? ; EFI_STATUS (*this)
+	Delete		PTR ? ; EFI_STATUS (*this)
+	Read		PTR ? ; EFI_STATUS (*this,*UINTN,*)
+	Write		PTR ? ; EFI_STATUS (*this,*UINTN,*)
+	GetPosition	PTR ? ; EFI_STATUS (*this,*UINT64)
+	SetPosition	PTR ? ; EFI_STATUS (*this,UINT64)
+	GetInfo		PTR ? ; EFI_STATUS (*this,*EFI_GUID,*UINTN,*)
+	SetInfo		PTR ? ; EFI_STATUS (*this,*EFI_GUID,UINTN,*)
+	Flush		PTR ? ; EFI_STATUS (*this)
+
+	OpenEx		PTR ? ; EFI_STATUS (*this,**EFI_FILE_PROTOCOL,*CHAR16,UINT64,UINT64,*EFI_FILE_IO_TOKEN)
+	ReadEx		PTR ? ; EFI_STATUS (*this,*EFI_FILE_IO_TOKEN)
+	WriteEx		PTR ? ; EFI_STATUS (*this,*EFI_FILE_IO_TOKEN)
+	FlushEx		PTR ? ; EFI_STATUS (*this,*EFI_FILE_IO_TOKEN)
+ends
+
+EFI_FILE_PROTOCOL_REVISION	:= 0x0001_0000
+EFI_FILE_PROTOCOL_REVISION2	:= 0x0002_0000
+
+EFI_FILE_MODE_READ	:= 1 shl 0
+EFI_FILE_MODE_WRITE	:= 1 shl 1
+EFI_FILE_MODE_CREATE	:= 1 shl 63
+
+EFI_FILE_READ_ONLY	:= 1 shl 0
+EFI_FILE_HIDDEN		:= 1 shl 1
+EFI_FILE_SYSTEM		:= 1 shl 2
+EFI_FILE_RESERVED	:= 1 shl 3
+EFI_FILE_DIRECTORY	:= 1 shl 4
+EFI_FILE_ARCHIVE	:= 1 shl 5
+EFI_FILE_VALID_ATTR	:= 0x0000000000000037
+
+struct EFI_FILE_IO_TOKEN
+	Event		EFI_EVENT ?
+	Status		EFI_STATUS ?
+	; for ReadEx/WriteEx, or ignored
+	BufferSize	UINTN ?
+	Buffer		PTR ?
+ends

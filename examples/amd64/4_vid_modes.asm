@@ -34,7 +34,7 @@ start:	entry $
 	; interface. Whereas the system table provides char interfaces.
 
 	mov rax,[rbp + EFI_SYSTEM_TABLE.BootServices]
-	lea rcx,[gop_guid]
+	lea rcx,[EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID]
 	xor edx,edx
 	lea r8,[.gop]
 	call [rax + EFI_BOOT_SERVICES.LocateProtocol]
@@ -210,9 +210,6 @@ FieldJustify:
 @@:	pop rax
 	lea rax,[rdi+rcx*2-2] ; use truncated tail part
 	retn 8			; remove field width
-
-
-USTR equ gop_guid EFI_GUID EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID
 
 USTR equ MaskHeads du ' R G B ?'
 USTR equ _header du \

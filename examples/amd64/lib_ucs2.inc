@@ -1,7 +1,3 @@
-if used digit_table
-USTR equ digit_table db '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-end if
-
 if used UINT64__Baseform_UCS2
 UINT64__Baseform_UCS2: ; dynamic size numerical output ; 32 bytes :-)
 ; RAX : number to convert
@@ -37,21 +33,47 @@ UINT64__Baseform_UCS2: ; dynamic size numerical output ; 32 bytes :-)
 end if
 
 
+if used PartitionedNibbles_UCS2
+PartitionedNibbles_UCS2:
+;  +8 : array of words to output
+; RCX : [1-4+] word partitions to output in hexadecimal, high-word first
+; RDI : UCS2 string buffer
+	jmp @F0
+@1:	mov al,'_'
+	stosw
+@0:	movzx edx,word [rsp+2*(rcx-1)+8]
+	push rcx
+	mov cl,4 shl 2
+	call Nibbles_UCS2
+	pop rcx
+	loop @B1
+	ret 8 ; larger word arrays need manual correction ;-)
+end if
+
+
 if used Nibbles_UCS2
 Nibbles_UCS2: ; constant size numerical output
 ; RAX : used, byte ??
-; ECX : (nibbles to output [1-16]) shl 2
+;  CL : (nibbles to output [1-16]) shl 2
 ; RDX : value to output, unchanged
 	lea rbx,[digit_table]
 .nibble:
+;	shrx rax,rdx,rcx ; 60,56,52,..,0
+;	and eax,$F
 	shrd rax,rdx,cl
 	shr rax,64-4			; mask and scale, just top nibble
 	movzx eax,byte [rbx+rax]	; translate to ASCII hex
 	stosw				; UCS2 output
-	sub ecx,4
+	sub cl,4
 	ja .nibble
 	retn
 end if
+
+
+if used digit_table
+USTR equ digit_table db '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+end if
+
 
 if used MultiCat_UCS2
 MultiCat_UCS2: ; gather string array on stack at RDI
@@ -65,3 +87,14 @@ MultiCat_UCS2: ; gather string array on stack at RDI
 	jnz @B
 	jmp rax
 end if
+
+macro MULTICAT_UCS2 str_term:0
+	local o
+	pop rsi
+o:	movsw
+	cmp word [rsi],str_term
+	jnz o
+	pop rsi
+	test rsi,rsi
+	jnz o
+end macro

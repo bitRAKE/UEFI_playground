@@ -13,13 +13,8 @@ include 'table\boot_services.inc'
 include 'table\runtime_services.inc'
 ;include 'table\configuration.inc'
 
-
 include 'protocol\simple_text_input.inc'
 include 'protocol\simple_text_output.inc'
-
-;include 'protocol\graphics_output.inc'
-;include 'protocol\simple_pointer.inc'
-;include 'protocol\absolute_pointer.inc'
 
 
 EFI_SUCCESS := 0

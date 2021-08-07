@@ -1,4 +1,5 @@
-define EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL_GUID { 0x387477C2,0x69C7,0x11D2, { 0x8E,0x39,0x00,0xA0,0xC9,0x69,0x72,0x3B } }
+?GUID equ EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL_GUID \
+{0x387477C2,0x69C7,0x11D2,{0x8E,0x39,0x00,0xA0,0xC9,0x69,0x72,0x3B}}
 struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL
 	Reset                PTR ? ; EFI_STATUS (*this,BOOLEAN)
 	OutputString         PTR ? ; EFI_STATUS (*this,*CHAR16)
@@ -107,3 +108,51 @@ struct EFI_SIMPLE_TEXT_OUTPUT_MODE
 	CursorRow	dd ? ;
 	CursorVisible	dd ? ;
 ends
+
+
+
+if used ConOut__PrintAttrAt
+ConOut__PrintAttrAt:
+; RBP : EFI_SYSTEM_TABLE pointer
+	virtual at RSP
+		rq 4 ; shadow space for Win64abi
+
+	; local variable space:
+	;	(nothing)
+
+	; align stack with extra space if needed:
+		rb ($10 - ((.PARAM + 8 + $ - $$) and $F)) and $F
+
+	; culmination of stack adjustment needed:
+		.FRAME := $ - $$
+
+		.RET		dq ?	; CALL instruction put this on stack
+
+	; parameters passed on stack:
+		.str_usc2	dq ?	;*CHAR16
+		.attribute	dq ?	; UINTN (only least byte used)
+		.column		dq ?	; UINTN
+		.row		dq ?	; UINTN
+
+	; passed parameter bytes to clear off stack
+		.PARAM := $ - .str_usc2
+	end virtual
+	sub rsp,.FRAME
+
+	mov rcx,[rbp + EFI_SYSTEM_TABLE.ConOut]
+	mov edx,dword [.column]
+	mov r8d,dword [.row]
+	call [rcx + EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL.SetCursorPosition]
+
+	mov rcx,[rbp + EFI_SYSTEM_TABLE.ConOut]
+	; optimized to allow immediate byte pushes when using EFI_WIDE_ATTRIBUTE
+	movzx edx,byte [.attribute]
+	call [rcx + EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL.SetAttribute]
+
+	mov rcx,[rbp + EFI_SYSTEM_TABLE.ConOut]
+	mov rdx,[.str_usc2]
+	call [rcx + EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL.OutputString]
+
+	add rsp,.FRAME
+	retn .PARAM
+end if

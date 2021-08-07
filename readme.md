@@ -1,5 +1,7 @@
 Mainly a collection of programming and learning for UEFI.
 
+The examples focus on discovery and exploration of implementations. Every UEFI firmware/shell is a little different as they are built on interpretations the spec.
+
 Working with the latest version of QEMU to debug from Windows.
 
 Also testing on real hardware.
