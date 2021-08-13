@@ -82,9 +82,10 @@ define TPL_NOTIFY 16
 define TPL_HIGH_LEVEL 31
 
 
-; global type abstractions (don't change with execution model):
-
-iterate T, EFI_PHYSICAL_ADDRESS,EFI_VIRTUAL_ADDRESS
+; global type abstractions:
+;	+ need alignment
+;	+ same size reguardless of execution model
+iterate T, UINT64,EFI_LBA,EFI_PHYSICAL_ADDRESS,EFI_VIRTUAL_ADDRESS
 	calminstruction T values&
 		asmcmd =ALIGN 8
 		asmcmd =DQ values
@@ -96,11 +97,13 @@ iterate T, EFI_PHYSICAL_ADDRESS,EFI_VIRTUAL_ADDRESS
 end iterate
 
 
+
+
 iterate I,AllocateAnyPages,AllocateMaxAddress,AllocateAddress
-	I := %-1 ; EFI_ALLOCATE_TYPE
+	I := % - 1 ; EFI_ALLOCATE_TYPE
 end iterate
 iterate I,EfiReservedMemoryType,EfiLoaderCode,EfiLoaderData,EfiBootServicesCode,EfiBootServicesData,EfiRuntimeServicesCode,EfiRuntimeServicesData,EfiConventionalMemory,EfiUnusableMemory,EfiACPIReclaimMemory,EfiACPIMemoryNVS,EfiMemoryMappedIO,EfiMemoryMappedIOPortSpace,EfiPalCode,EfiPersistentMemory,EfiUnacceptedMemoryType
-	I := %-1 ; EFI_MEMORY_TYPE
+	I := % - 1 ; EFI_MEMORY_TYPE
 end iterate
 
 define EFI_MEMORY_DESCRIPTOR_VERSION 1
@@ -129,6 +132,13 @@ struct EFI_MEMORY_DESCRIPTOR
 	Attribute	dq ?
 ends
 
+struct EFI_MEMORY_ATTRIBUTES_TABLE
+	Version		dd ?	;
+	NumberOfEntries	dd ?	;
+	DescriptorSize	dd ?	;
+	Reserved	dd ?	;
+	?Entry		EFI_MEMORY_DESCRIPTOR ; array ...
+ends
 
 ;define EFI_EVENT PTR
 
@@ -152,6 +162,23 @@ iterate I,TimerCancel,TimerPeriodic,TimerRelative
 	I := % - 1 ; EFI_TIMER_DELAY
 end iterate
 
+
+
+macro gBS line& ; compact coding helper
+	match ->A B,line
+		WIN64ABI B
+		mov rax,[rbp + EFI_SYSTEM_TABLE.BootServices]
+		call [rax + EFI_BOOT_SERVICES.A]
+	else match ->A,line
+		mov rax,[rbp + EFI_SYSTEM_TABLE.BootServices]
+		call [rax + EFI_BOOT_SERVICES.A]
+	else
+		err
+	end match
+end macro
+;	gBS->SetWatchdogTimer 0,0,0,0
+;	gBS->OpenProtocol [.ImageHandle],ADDR EFI_LOADED_IMAGE_PROTOCOL_GUID,\
+;		ADDR [.LoadedImage],[.ImageHandle],0,EFI_OPEN_PROTOCOL_GET_PROTOCOL
 
 
 

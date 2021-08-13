@@ -19,10 +19,19 @@ macro _U register,quoted
 		lea register,[_U#k]
 	end repeat
 end macro
+macro _UX register,line&
+	local name
+	USTR equ name du line,0
+	lea register,[name]
+end macro
 
 ; generate a square constant table from variable sized data:
 ; (this instance is configured for UCS2 formate null-terminated strings)
 struc(ref) CONST_Table filler:0,line&
+	iterate I,line
+		USTR equ label ref:%% ; sizeof (ref) is number of table entries
+		break
+	end iterate
 	ref.max = 0
 	iterate I,line
 		USTR equ ref.% du I
@@ -31,10 +40,10 @@ struc(ref) CONST_Table filler:0,line&
 		if ref.%.bytes > ref.max
 			ref.max = ref.%.bytes
 		end if
-		USTR equ du (ref.MAX - ref.%.bytes) dup filler
-		USTR equ rb (ref.MAX + 2) - ref.%.bytes
+		USTR equ du ((ref.MAX - ref.%.bytes - 2) shr 1) dup filler,0
+;		USTR equ rb (ref.MAX + 2) - ref.%.bytes
 	end iterate
-	ref.MAX := ref.max
+	ref.MAX := ref.max + 2
 
 	; reg0 : destination gets address of constant data
 	; reg1 : 0-based index of selection

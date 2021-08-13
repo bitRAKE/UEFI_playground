@@ -38,7 +38,7 @@ PartitionedNibbles_UCS2:
 ;  +8 : array of words to output
 ; RCX : [1-4+] word partitions to output in hexadecimal, high-word first
 ; RDI : UCS2 string buffer
-	jmp @F0
+	jmp @0F
 @1:	mov al,'_'
 	stosw
 @0:	movzx edx,word [rsp+2*(rcx-1)+8]
@@ -46,7 +46,7 @@ PartitionedNibbles_UCS2:
 	mov cl,4 shl 2
 	call Nibbles_UCS2
 	pop rcx
-	loop @B1
+	loop @1B
 	ret 8 ; larger word arrays need manual correction ;-)
 end if
 

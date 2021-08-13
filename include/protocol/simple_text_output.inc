@@ -112,6 +112,7 @@ ends
 
 
 if used ConOut__PrintAttrAt
+; TODO: select 32/64 code based on mode
 ConOut__PrintAttrAt:
 ; RBP : EFI_SYSTEM_TABLE pointer
 	virtual at RSP

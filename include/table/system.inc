@@ -35,3 +35,33 @@ ends
 
 
 
+macro gST line& ; compact coding helper
+	match -> =ConIn -> A B,line
+		WIN64ABI [rbp + EFI_SYSTEM_TABLE.ConIn],B
+		call [rcx + EFI_SIMPLE_TEXT_INPUT_PROTOCOL.A]
+	else match -> =ConOut -> A B,line
+		WIN64ABI [rbp + EFI_SYSTEM_TABLE.ConOut],B
+		call [rcx + EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL.A]
+	else match -> =StdErr -> A B,line
+		WIN64ABI [rbp + EFI_SYSTEM_TABLE.StdErr],B
+		call [rcx + EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL.A]
+	else
+		err 'unknown interface in system table use: ',10,9,`line,10
+	end match
+end macro
+
+
+
+macro cmp_GUID g0,g1
+	mov rax,[g0]
+	mov rdx,[g0+8]
+	xor rax,[g1]
+	xor rdx,[g1+8]
+	or rax,rdx
+
+;	push 4
+;	pop rcx
+;	repz cmpsd
+end macro
+
+

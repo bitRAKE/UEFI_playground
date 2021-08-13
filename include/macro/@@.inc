@@ -22,7 +22,7 @@ macro @INIT name,prefix
 		match label, prefix#f?
 			label tail
 			prefix#b? equ prefix#f?
-			prefix#r? equ prefix#f?
+;			prefix#r? equ prefix#f?
 		end match
 		local anonymous
 		prefix#f? equ anonymous
