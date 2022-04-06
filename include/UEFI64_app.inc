@@ -86,17 +86,13 @@ postpone
 		end match
 	end irpv
 
-	data fixups
-	end data
-	namespace PE
-		; fixups are DATA_DIRECTORY 5
-		load DATA_BYTES:dword from PE:RvaAndSizes.Size + 5*RvaAndSizes.ENTRY_LENGTH
-		if DATA_BYTES = 0
-			; clear RVA if length is zero
-			store 0:dword at PE:RvaAndSizes.Rva + 5*RvaAndSizes.ENTRY_LENGTH
-			display 10,'fyi: relocation data was not needed'
-		end if
-	end namespace
+	section '.reloc' fixups data readable discardable
+	; zero length fixup directory is an invalid PE on some versions of windows
+	if PE.NUMBER_OF_RELOCATIONS = 0
+		; fixups are DATA_DIRECTORY 5, clear RVA if no relocations
+		store 0:dword at PE:RvaAndSizes.Rva + 5*RvaAndSizes.ENTRY_LENGTH
+		display 10,'fyi: relocation data was not needed'
+	end if
 end postpone
 
 
